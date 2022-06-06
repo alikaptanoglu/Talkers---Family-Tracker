@@ -3,7 +3,7 @@ import 'package:development/product/color/image_color.dart';
 import 'package:development/product/responsive/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../functions/date.dart';
+import '../models/date.dart';
 import '../main.dart';
 import '../product/space/space.dart';
 
@@ -76,15 +76,17 @@ class _TrackedPersonInfoState extends State<TrackedPersonInfo> {
     mainAxisAlignment: MainAxisAlignment.center,
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Container(constraints: BoxConstraints(maxWidth: SizeConfig.screenWidth!/2.5),child: FittedBox(child: Text(field.get('name'), style: TextStyle(fontSize: SizeConfig().fontSize(20,18)),))),
-      Space().spaceHeight(4),
+      Container(constraints: BoxConstraints(maxWidth: SizeConfig.screenWidth!/2.5),child: FittedBox(child: Text(field.get('name'), style: TextStyle(fontSize: SizeConfig().fontSize(22,20), fontWeight: FontWeight.bold),))),
+      Space().spaceHeight(5),
       Text(widget.documentID, style: TextStyle(fontSize: SizeConfig().fontSize(16,14),color: Colors.grey)),
     ],
   );
   }
 
-  Column _offlineView(DocumentSnapshot<Object?> field) {
-    return Column(
+  Widget _offlineView(DocumentSnapshot<Object?> field) {
+    return field.get('last_seen') == null ? 
+    const SizedBox() :
+    Column(
       crossAxisAlignment: CrossAxisAlignment.end,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -109,38 +111,12 @@ class _TrackedPersonInfoState extends State<TrackedPersonInfo> {
                             ]);
   }
 
-  Row _onlineView() {
-    return Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                                width: 6,
-                                height: 6,
-                                child: CircleAvatar(
-                                    backgroundColor:
-                                        ProjectColors().onlineColor)),
-                            const SizedBox(
-                              width: 4,
-                            ),
-                            Container(
-                                margin: const EdgeInsets.only(right: 10),
-                                child: Text(parsedJson['online'], style: TextStyle(fontSize: SizeConfig().fontSize(20,18))))
-                          ],
-                        );
+  Text _onlineView() {
+    return Text(parsedJson['online'], style: TextStyle(fontSize: SizeConfig().fontSize(22,20), color: Colors.green));
   }
 
   CircleAvatar _avatar() {
-    return CircleAvatar(
-                        radius: 25,
-                        backgroundColor: controller.isOnline.value
-                            ? ProjectColors().onlineColor
-                            : ProjectColors().offlineColor,
-                        child: CircleAvatar(radius: 24,backgroundColor: Colors.white,child: Padding(
-                          padding: const EdgeInsets.all(5.0),
-                          child: Image.asset('assets/images/ic_personicon.png', fit: BoxFit.cover,),
-                        )),
-                      );
+    return CircleAvatar(backgroundColor: Colors.white,radius: 25,child: Image.asset('assets/images/ic_personicon.png', fit: BoxFit.cover,color: ProjectColors().scaffoldBackgroundColor,));
   }
 }
 

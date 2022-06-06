@@ -1,18 +1,11 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:development/product/responsive/responsive.dart';
 import 'package:development/product/space/space.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import '../Screens/loginView/logs_view.dart';
-import '../functions/user.dart';
+import '../models/user.dart';
 import '../main.dart';
-import '../product/color/image_color.dart';
-import '../product/dialog/snackbar_dialog.dart';
-
-TextEditingController _nameController = TextEditingController();
-bool _isNameOk = false;
-
-
 
 class UserInfoStreamBuilder extends StatefulWidget {
   const UserInfoStreamBuilder({Key? key}) : super(key: key);
@@ -24,24 +17,8 @@ class UserInfoStreamBuilder extends StatefulWidget {
 class _UserInfoStreamBuilderState extends State<UserInfoStreamBuilder> {
 
   @override
-  void initState() {
-    super.initState();
-    _nameController.addListener(() { 
-        if(_nameController.text.isEmpty || _nameController.text.contains(RegExp(r'[0-9]'))){
-        setState(() {
-          _isNameOk = false;
-        });
-      }else{
-        setState(() {
-          _isNameOk = true;
-        });
-      }
-    });
-  }
-  @override
   Widget build(BuildContext context) {
     return _userInfo();
-    
   }
 
   StreamBuilder<QuerySnapshot<Map<String, dynamic>>> _userInfo() {
@@ -57,10 +34,8 @@ class _UserInfoStreamBuilderState extends State<UserInfoStreamBuilder> {
           int randomNumber = 0;
           if (snapshot.hasData) {
             if (snapshot.data!.docs.isNotEmpty) {
-              controller.isNotEmptyUserData.value = true;
               return _buildUserInfo(snapshot, randomNumber, context);
             } else {
-              controller.isNotEmptyUserData.value = false;
               return Container();
             }
           } else {
@@ -81,9 +56,9 @@ class _UserInfoStreamBuilderState extends State<UserInfoStreamBuilder> {
               children: [
                 GestureDetector(
                   onTap: () {
-                    Future.delayed(const Duration(milliseconds: 200),() async {
-                      Get.to(() => ShowLogView(documentId: document.id));
-                    });
+                    document['is_online'] == null
+                    ? null
+                    : Navigator.pushAndRemoveUntil<dynamic>(context,MaterialPageRoute<dynamic>(builder: (BuildContext context) => ShowLogView(documentId: document.id),),(route) => false);
                     },
                   child: Container(
                     height: 80,
@@ -92,7 +67,7 @@ class _UserInfoStreamBuilderState extends State<UserInfoStreamBuilder> {
                     decoration: BoxDecoration(
                         color: Colors.transparent,
                         borderRadius: BorderRadius.circular(40),
-                        border: Border.all(color: document['is_online'] ? Colors.green : Colors.red, width: 2),
+                        border: Border.all(color: document['is_online'] == null ? Colors.grey : document['is_online'] ?Colors.green : Colors.red, width: 2),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -100,44 +75,24 @@ class _UserInfoStreamBuilderState extends State<UserInfoStreamBuilder> {
                           Row(
                             children: [
                               CircleAvatar(
-                              backgroundColor: Colors.white,
                               radius: 20,
-                              child: Padding(padding: const EdgeInsets.all(1),child:  Padding(
-                                padding: const EdgeInsets.all(5.0),
-                                child: CircleAvatar(
-                                backgroundColor: Colors.white,
-                                child: Image.asset('assets/images/ic_personicon.png',color: Colors.black, fit: BoxFit.cover,)),
-                              ),)),
+                              backgroundColor: Colors.transparent,
+                              child: Image.asset('assets/images/ic_personicon.png',color: Colors.white, fit: BoxFit.cover,)),
                               Space().spaceWidth(10),
                               Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  GestureDetector(
-                                  child: Row(
-                                  children: [
                                   Container(
                                     constraints: BoxConstraints(maxWidth: SizeConfig.screenWidth!/2.5),
                                     child: FittedBox(
                                       child: Text(
                                         document['name'],
-                                        style: TextStyle(color: Colors.white,fontSize: SizeConfig().fontSize(18,16)),
+                                        style: TextStyle(color: Colors.white,fontSize: SizeConfig().fontSize(18,16), fontWeight: FontWeight.bold),
                                       ),
                                     ),
                                   ),
-                                  Space().spaceWidth(4),
-                                  Icon(
-                                    Icons.edit_note_sharp,
-                                    size: 15,
-                                    color: Colors.white.withOpacity(0.4),
-                                  ),
-                                                            ],
-                                                          ),
-                          onTap: () {
-                            _nameController.clear();
-                            _changeNameDialog(context, document);
-                          },  
-                        ),
+                                  Space().spaceHeight(2),
                         Text(
                           document.id,
                           style: TextStyle(
@@ -158,12 +113,12 @@ class _UserInfoStreamBuilderState extends State<UserInfoStreamBuilder> {
                   ),
                 Positioned(
                   bottom: (80 - 20),
-                  left: Get.width/2 - 50,
+                  left: document['is_online'] == null ? SizeConfig.screenWidth!/2 - 70 : SizeConfig.screenWidth!/2 - 35,
                   child: Container(
-                    decoration: BoxDecoration(color: document['is_online'] ? Colors.green : Colors.red, borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(20), bottomRight: Radius.circular(20)),),
+                    decoration: BoxDecoration(color: document['is_online'] == null ? Colors.grey : document['is_online']  ?Colors.green : Colors.red, borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(20), bottomRight: Radius.circular(20)),),
                     height: 20,
-                    width: 100,
-                    child: Center(child: Text(document['is_online'] ? parsedJson['online'] : parsedJson['offline'], style: TextStyle(color: Colors.white, fontSize: SizeConfig().fontSize(12,10)),),)
+                    width: document['is_online'] == null ? 140 : 70,
+                    child: Center(child: FittedBox(child: Text(document['is_online'] == null ? 'Waiting for first login' : document['is_online'] ? parsedJson['online'] : parsedJson['offline'], style: TextStyle(color: Colors.white, fontSize: SizeConfig().fontSize(12,10)),)),)
                   ),
                 ),
               ],
@@ -182,12 +137,12 @@ class _UserInfoStreamBuilderState extends State<UserInfoStreamBuilder> {
                                     return SafeArea(
                                       child: Container(
                                         color: Colors.transparent,
-                                        height: (Get.height*3/16) + 10,
+                                        height: (SizeConfig.screenHeight!*3/16) + 10,
                                         child: Column(
                                           children: [
                                             Container(
-                                              width: Get.width,
-                                              height: Get.height/8,
+                                              width: SizeConfig.screenWidth!,
+                                              height: SizeConfig.screenHeight!/8,
                                               decoration: BoxDecoration(
                                                   borderRadius:
                                                       BorderRadius.circular(20),
@@ -197,24 +152,29 @@ class _UserInfoStreamBuilderState extends State<UserInfoStreamBuilder> {
                                                     MainAxisAlignment.center,
                                                 children: [
                                                   Expanded(
-                                                      child: Row(
-                                                          mainAxisAlignment: MainAxisAlignment.center,
-                                                          children: [
-                                                            FittedBox(child: Text('${document['name']}, ',style: TextStyle(fontWeight:FontWeight.bold, fontSize: SizeConfig().fontSize(16,14)),)),
-                                                            FittedBox(child: Text(parsedJson['dialogquestion'], style: TextStyle(fontSize: SizeConfig().fontSize(16,14)),))
-                                                          ])),
+                                                      child: FittedBox(
+                                                        child: Padding(
+                                                          padding: const EdgeInsets.symmetric(horizontal: 40),
+                                                          child: Row(
+                                                              mainAxisAlignment: MainAxisAlignment.center,
+                                                              children: [
+                                                                FittedBox(child: Text('${document['name']}, ',style: TextStyle(fontWeight:FontWeight.bold, fontSize: SizeConfig().fontSize(18,16)),)),
+                                                                FittedBox(child: Text(parsedJson['dialogquestion'], style: TextStyle(fontSize: SizeConfig().fontSize(18,16)),))
+                                                              ]),
+                                                        ),
+                                                      )),
                                                   const Divider(color: Colors.grey,height: 1,),
                                                   Expanded(
                                                     child: GestureDetector(
                                                       child: Container(
-                                                        width: Get.width,
+                                                        width: SizeConfig.screenWidth!,
                                                         decoration: const BoxDecoration(borderRadius:BorderRadius.only(bottomLeft: Radius.circular(20),bottomRight: Radius.circular(20)),color: Colors.white),
                                                         child: Center(
                                                           child: Text(
                                                             parsedJson['dialogdelete'],
                                                             style: TextStyle(
                                                             color: Colors.red,
-                                                            fontSize: SizeConfig().fontSize(18,16)),
+                                                            fontSize: SizeConfig().fontSize(22,20)),
                                                           ),
                                                         )),
                                                       onTap: () async {
@@ -222,7 +182,6 @@ class _UserInfoStreamBuilderState extends State<UserInfoStreamBuilder> {
                                                         Future.delayed(Duration.zero, () async {
                                                           await UserService(uid: document.id).deleteUserData();
                                                         });
-                                                        ScaffoldMessenger.of(context).showSnackBar(SnackbarDialog().messageSuccess);
                                                       },
                                                     ),
                                                   ),
@@ -232,8 +191,8 @@ class _UserInfoStreamBuilderState extends State<UserInfoStreamBuilder> {
                                             Space().spaceHeight(10),
                                             GestureDetector(
                                               child: Container(
-                                                height: Get.height/16,
-                                                width: Get.width,
+                                                height: SizeConfig.screenHeight!/16,
+                                                width: SizeConfig.screenWidth!,
                                                 decoration: BoxDecoration(
                                                     borderRadius:
                                                         BorderRadius.circular(20),
@@ -243,7 +202,7 @@ class _UserInfoStreamBuilderState extends State<UserInfoStreamBuilder> {
                                                   parsedJson['dialogcancel'],
                                                   style: TextStyle(
                                                       color: const Color.fromARGB( 250, 20, 22, 91),
-                                                      fontSize: SizeConfig().fontSize(18,16)),
+                                                      fontSize: SizeConfig().fontSize(22,20)),
                                                 )),
                                               ),
                                               onTap: Navigator.of(context).pop,
@@ -254,80 +213,5 @@ class _UserInfoStreamBuilderState extends State<UserInfoStreamBuilder> {
                                     );
                                   },
                                 );
-  }
-
-  Future<dynamic> _changeNameDialog(BuildContext context, QueryDocumentSnapshot<Object?> document) {
-    return showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                backgroundColor: Colors.transparent,
-                                insetPadding: const EdgeInsets.all(0),
-                                content: Stack(children: [
-                                  Container(
-                                    decoration: BoxDecoration(borderRadius:BorderRadius.circular(10),color: Colors.white),
-                                    height: 180,
-                                    width: Get.width,
-                                    constraints: const BoxConstraints(maxWidth: 400),
-                                    child: Column(children: [
-                                      SizedBox(
-                                        height: 30,
-                                        child: Padding(
-                                          padding: const EdgeInsets.only(top: 10, right: 10),
-                                          child: Align(
-                                            alignment: Alignment.topRight,
-                                            child: IconButton(
-                                              onPressed: () {
-                                                Navigator.of(context).pop();
-                                              },
-                                              icon: const Icon(Icons.close,color: Colors.black,size: 25,),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 20) + const EdgeInsets.symmetric(vertical: 10),
-                                        child: TextField(
-                                          maxLength: 15,
-                                          decoration: InputDecoration(
-                                            counterText: "",
-                                            suffixIconConstraints: const BoxConstraints(maxHeight: 15,maxWidth: 15),
-                                            suffixIcon: _nameController.text.isEmpty ? const SizedBox() : CircleAvatar(radius: 10, backgroundColor: _isNameOk ? Colors.green : Colors.red, child: Icon( _isNameOk ? Icons.check : Icons.close,color: Colors.white,size: 10),),
-                                            labelText: parsedJson['dialogname'],
-                                            prefixIcon: const Icon(Icons.person),
-                                          ),
-                                          keyboardType: TextInputType.name,
-                                          controller: _nameController,
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 5),
-                                        child: Container(
-                                          constraints: const BoxConstraints(maxWidth: 300),
-                                          width: Get.width/3,
-                                          child: TextButton(
-                                            child: Text(parsedJson['dialogchange'],style: const TextStyle(color: Colors.white),),
-                                            style: TextButton.styleFrom(backgroundColor: ProjectColors().themeColor),
-                                            onPressed: () {
-                                              Future.delayed(Duration.zero, (){
-                                              if(!_isNameOk){
-                                                return;
-                                              }else{
-                                                // Name updated 
-                                                Navigator.of(context).pop();
-                                                UserService(uid: document.id).updateUserName(_nameController.text);
-                                                _nameController.clear();
-                                                ScaffoldMessenger.of(context).showSnackBar(SnackbarDialog().messageSuccess);
-                                              }
-                                              });
-                                            },
-                                          ),
-                                        ),
-                                      )
-                                    ]),
-                                  )
-                                ]),
-                              );
-                            });
   }
 }

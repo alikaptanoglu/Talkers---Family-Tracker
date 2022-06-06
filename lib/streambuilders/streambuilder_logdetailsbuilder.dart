@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../functions/date.dart';
+import '../models/date.dart';
 import '../main.dart';
 import '../product/responsive/responsive.dart';
 
@@ -30,9 +30,7 @@ class _LogDetailsBuilderState extends State<LogDetailsBuilder> {
             .collection('contacts')
             .doc(controller.documentId.value)
             .collection('logs')
-            .where('start',
-                isGreaterThanOrEqualTo: controller.startDate.value,
-                isLessThanOrEqualTo: controller.endDate.value.add(const Duration(days: 1)))
+            .where('start', isGreaterThanOrEqualTo: controller.startDate.value, isLessThanOrEqualTo: controller.endDate.value.add(const Duration(days: 1)))
             .orderBy('start', descending: true)
             .snapshots(),
         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -73,15 +71,16 @@ class _LogDetailsBuilderState extends State<LogDetailsBuilder> {
                     snapshot.data!.docs.isNotEmpty ? 
                     Container(
                         margin: const EdgeInsets.only(right: 10, left: 20, top: 20),
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
                         decoration: BoxDecoration(borderRadius: BorderRadius.circular(8),color:Colors.white,),
-                        width: Get.width/2 - 30,
+                        width: SizeConfig.screenWidth!/2 - 30,
                         height: 140,
                         child: Center(child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                        Text(parsedJson['totalAc'],style: TextStyle(color: const Color.fromARGB(255, 36, 15, 0),fontWeight: FontWeight.w300,fontSize: SizeConfig().fontSize(18,16)),textAlign: TextAlign.center,), 
+                        FittedBox(child: Text(parsedJson['totalAc'],style: TextStyle(color: const Color.fromARGB(255, 36, 15, 0),fontWeight: FontWeight.w300,fontSize: SizeConfig().fontSize(20,18)),textAlign: TextAlign.center, )), 
                         const SizedBox(height: 5,),
-                        Text(totalActivities.toString(),style: TextStyle(fontSize: SizeConfig().fontSize(18,16),color: Colors.black,fontWeight: FontWeight.w400)),
+                        Text(totalActivities.toString(),style: TextStyle(fontSize: SizeConfig().fontSize(20,18),color: Colors.black,fontWeight: FontWeight.w400)),
                         ],
                         )),
                       ) : 
@@ -89,7 +88,8 @@ class _LogDetailsBuilderState extends State<LogDetailsBuilder> {
                       snapshot.data!.docs.isNotEmpty ? Container(
                         decoration: BoxDecoration(borderRadius: BorderRadius.circular(8),color:Colors.white,),
                         margin: const EdgeInsets.only(right: 20, left: 10, top: 20),
-                        width: Get.width/2 - 30,
+                        width: SizeConfig.screenWidth!/2 - 30,
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
                         height: 140,
                         child: isOnline
                             ? StreamBuilder(
@@ -104,7 +104,7 @@ class _LogDetailsBuilderState extends State<LogDetailsBuilder> {
                                     child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                        Text(parsedJson['totalDur'],style: TextStyle(color: const Color.fromARGB(255, 36, 15, 0),fontWeight: FontWeight.w300,fontSize: SizeConfig().fontSize(18,16)),textAlign: TextAlign.center,), 
+                        FittedBox(child: Text(parsedJson['totalDur'],style: TextStyle(color: const Color.fromARGB(255, 36, 15, 0),fontWeight: FontWeight.w300,fontSize: SizeConfig().fontSize(20,18)),textAlign: TextAlign.center,)), 
                         const SizedBox(height: 5,),
                         Text(printDuration(sayac + totalDuration.seconds),style: TextStyle(fontSize: SizeConfig().fontSize(18,16),color: Colors.black,fontWeight: FontWeight.w400)),
                         ],
@@ -117,9 +117,9 @@ class _LogDetailsBuilderState extends State<LogDetailsBuilder> {
                                     child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                        Text(parsedJson['totalDur'],style: TextStyle(color: const Color.fromARGB(255, 36, 15, 0),fontWeight: FontWeight.w300,fontSize: SizeConfig().fontSize(18,16)),textAlign: TextAlign.center,), 
+                        FittedBox(child: Text(parsedJson['totalDur'],style: TextStyle(color: const Color.fromARGB(255, 36, 15, 0),fontWeight: FontWeight.w300,fontSize: SizeConfig().fontSize(20,18)),textAlign: TextAlign.center,)), 
                         const SizedBox(height: 5,),
-                        Text(printDuration(totalDuration.seconds),style: TextStyle(fontSize: SizeConfig().fontSize(18,16),color: Colors.black,fontWeight: FontWeight.w400)),
+                        Text(printDuration(totalDuration.seconds),style: TextStyle(fontSize: SizeConfig().fontSize(22,20),color: Colors.black,fontWeight: FontWeight.w400,)),
                         ],
                         ),
                                   ),

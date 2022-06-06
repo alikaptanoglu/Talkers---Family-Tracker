@@ -3,7 +3,7 @@ import 'package:development/product/responsive/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import '../functions/date.dart';
+import '../models/date.dart';
 import '../main.dart';
 
 
@@ -24,8 +24,8 @@ class LogBuilder extends StatelessWidget {
           .doc(controller.documentId.value)
           .collection('logs')
           .where('start',
-              isLessThanOrEqualTo: controller.endDate.value.add(const Duration(days: 1)),
-              isGreaterThanOrEqualTo: controller.startDate.value)
+            isLessThanOrEqualTo: controller.endDate.value.add(const Duration(days: 1)),
+            isGreaterThanOrEqualTo: controller.startDate.value)
           .orderBy('start', descending: true)
           .snapshots(),
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -67,7 +67,7 @@ class LogBuilder extends StatelessWidget {
         diff = isOnline ? now.difference(start) : end.difference(start);
 
         return Container(
-          height: 60,
+          height: 80,
           margin: const EdgeInsets.only(top: 20) + const EdgeInsets.symmetric(horizontal: 20),
           padding: const EdgeInsets.symmetric(horizontal: 20),
           decoration: BoxDecoration(
@@ -85,6 +85,7 @@ class LogBuilder extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       _startDate(start),
+                      _space(),
                       _startHour(start),
                     ],
                   ),
@@ -95,6 +96,7 @@ class LogBuilder extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     _textDuration(),
+                    _space(),
                     _duration(isOnline, start, diff),
                   ],
                 ),
@@ -106,6 +108,7 @@ class LogBuilder extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       _endDate(isOnline, end),
+                      _space(),
                       _endHour(isOnline, end),
                     ],
                   ),
@@ -207,24 +210,14 @@ class LogBuilder extends StatelessWidget {
 
   StreamBuilder<dynamic> _sayac(DateTime start) {
     return StreamBuilder(
-                                    stream: Stream.periodic(
-                                        const Duration(seconds: 1)),
-                                    builder: (context, snapshot) {
-                                      final sayac = Duration(
-                                          seconds: DateTime.now()
-                                              .difference(start)
-                                              .inSeconds);
-                                              return Center(
-                                        child: Text(
-                                          printDuration(sayac),
-                                          style: TextStyle(
-                                              fontSize: SizeConfig().fontSize(16, 14),
-                                              color: Colors.black
-                                                  .withOpacity(0.8)),
-                                        ),
-                                      );
-                                    },
-                                  );
+      stream: Stream.periodic(const Duration(seconds: 1)),builder: (context, snapshot) {
+        final sayac = Duration(seconds: DateTime.now().difference(start).inSeconds);
+        return Center(child: Text(printDuration(sayac),style: TextStyle(
+          fontSize: SizeConfig().fontSize(16, 14),color: Colors.black.withOpacity(0.8)),
+          ),
+        );
+      },
+    );
   }
 
   Column _loadingView() {
