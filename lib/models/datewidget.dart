@@ -1,8 +1,8 @@
+import 'package:development/main.dart';
 import 'package:development/product/responsive/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import '../../controller/countrycode_controller.dart';
 import 'datarangepicker.dart';
 
 class DateWidget extends StatelessWidget {
@@ -15,7 +15,6 @@ class DateWidget extends StatelessWidget {
 }
 
 GestureDetector _dateWidget() {
-    CountryCodeConrtroller _controller = Get.put(CountryCodeConrtroller());
     return GestureDetector(
       onTap: () {
         pickDateRange();
@@ -32,11 +31,11 @@ GestureDetector _dateWidget() {
             children: [
               Row(
                 children: [
-                  Text(DateFormat.MMMd().format(_controller.startDate.value),
+                  Text(DateFormat.MMMd().format(controller.startDate.value),
                       style: TextStyle(
                           color: Colors.black, fontSize: SizeConfig().fontSize(16, 14))),
                   Text(' - ', style: TextStyle(fontSize: SizeConfig().fontSize(16, 14))),
-                  Text(DateFormat.MMMd().format(_controller.endDate.value),
+                  Text(DateFormat.MMMd().format(controller.endDate.value),
                     style:
                         TextStyle(color: Colors.black, fontSize: SizeConfig().fontSize(16, 14)),
                   )
